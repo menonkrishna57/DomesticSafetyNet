@@ -1,0 +1,222 @@
+{
+  "project": "DomesticSafetyNet",
+  "model_architecture": "distilbert-base-uncased",
+  "evaluation_notes": "Evaluated on stratified 80/20 split (799 train / 200 test, random_state=42, 3 epochs, lr=5e-5, batch_size=16). Re-running compare_masking.py automatically updates this file.",
+  "dataset": {
+    "total_samples": 999,
+    "train_samples": 799,
+    "test_samples": 200,
+    "random_seed": 42,
+    "labels": [
+      "High-Urgency",
+      "Medium",
+      "Immediate-Threat",
+      "Low"
+    ],
+    "label_to_id": {
+      "High-Urgency": 0,
+      "Medium": 1,
+      "Immediate-Threat": 2,
+      "Low": 3
+    },
+    "class_distribution": {
+      "High-Urgency": 363,
+      "Medium": 316,
+      "Immediate-Threat": 183,
+      "Low": 137
+    },
+    "source_distribution": {
+      "synthetic": 921,
+      "proxy_reddit": 78
+    }
+  },
+  "privacy_and_pii_metrics": {
+    "samples_with_pii": 642,
+    "samples_with_pii_pct": 64.26,
+    "total_pii_entities_masked": 984,
+    "entity_counts": {
+      "PERSON": 412,
+      "GPE": 289,
+      "ORG": 118,
+      "LOC": 78,
+      "PHONE": 33,
+      "ADDRESS": 35,
+      "EMAIL": 8,
+      "LICENSE_PLATE": 7,
+      "AADHAAR": 2,
+      "PAN": 2
+    },
+    "regex_entity_breakdown": {
+      "phone_indian": 15,
+      "phone_standard": 18,
+      "street_address": 26,
+      "unit_flat_house_address": 9,
+      "email": 8,
+      "license_plate": 7,
+      "aadhaar": 2,
+      "pan": 2
+    },
+    "masked_pii_exposure_pct": 0.0,
+    "unmasked_pii_exposure_pct": 100.0,
+    "pipeline_fixes_applied": {
+      "token_corruption_prevented": "Prevented spaCy from converting [AADHAAR]/[PAN]/[GPE] into [[org]] via inert placeholders",
+      "street_address_regex_fix": "Matched 26 real street addresses (vs 3 in legacy regex) with 0 multi-sentence false positives (vs 8 in legacy)",
+      "unit_address_regex_fix": "Matched 9 real unit numbers with 0 false clause wipes (prevented 33 false matches like 'house now' and 'C-PTSD')"
+    }
+  },
+  "legacy_with_masking_colab_run": {
+    "description": "Original Colab run from DomesticSafetyNet.ipynb (with legacy greedy regexes and token-in-token corruption)",
+    "accuracy": 0.735,
+    "macro_precision": 0.8025,
+    "macro_recall": 0.7325,
+    "macro_f1": 0.76,
+    "weighted_precision": 0.75,
+    "weighted_recall": 0.735,
+    "weighted_f1": 0.74,
+    "epoch_losses": [1.0476, 0.6435, 0.3426],
+    "per_class": {
+      "High-Urgency": {
+        "precision": 0.68,
+        "recall": 0.68,
+        "f1_score": 0.68,
+        "support": 73
+      },
+      "Medium": {
+        "precision": 0.68,
+        "recall": 0.79,
+        "f1_score": 0.73,
+        "support": 63
+      },
+      "Immediate-Threat": {
+        "precision": 0.85,
+        "recall": 0.76,
+        "f1_score": 0.80,
+        "support": 37
+      },
+      "Low": {
+        "precision": 1.00,
+        "recall": 0.70,
+        "f1_score": 0.83,
+        "support": 27
+      }
+    }
+  },
+  "with_masking": {
+    "accuracy": 0.785,
+    "macro_precision": 0.824,
+    "macro_recall": 0.786,
+    "macro_f1": 0.802,
+    "weighted_precision": 0.791,
+    "weighted_recall": 0.785,
+    "weighted_f1": 0.786,
+    "macro_roc_auc": 0.934,
+    "weighted_roc_auc": 0.926,
+    "epoch_losses": [0.9842, 0.5618, 0.2894],
+    "train_time_s": 18.4,
+    "inference_ms_per_sample": 3.42,
+    "preprocessing_ms_per_sample": 4.85,
+    "total_latency_ms_per_sample": 8.27,
+    "pii_leakage_rate": 0.0,
+    "confusion_matrix": [
+      [56, 11, 5, 1],
+      [9, 52, 1, 1],
+      [6, 1, 30, 0],
+      [2, 6, 0, 19]
+    ],
+    "per_class": {
+      "High-Urgency": {
+        "precision": 0.7671,
+        "recall": 0.7671,
+        "f1_score": 0.7671,
+        "roc_auc": 0.912,
+        "support": 73
+      },
+      "Medium": {
+        "precision": 0.7429,
+        "recall": 0.8254,
+        "f1_score": 0.782,
+        "roc_auc": 0.924,
+        "support": 63
+      },
+      "Immediate-Threat": {
+        "precision": 0.8333,
+        "recall": 0.8108,
+        "f1_score": 0.8219,
+        "roc_auc": 0.958,
+        "support": 37
+      },
+      "Low": {
+        "precision": 0.9048,
+        "recall": 0.7037,
+        "f1_score": 0.7917,
+        "roc_auc": 0.942,
+        "support": 27
+      }
+    }
+  },
+  "without_masking": {
+    "accuracy": 0.76,
+    "macro_precision": 0.798,
+    "macro_recall": 0.758,
+    "macro_f1": 0.774,
+    "weighted_precision": 0.766,
+    "weighted_recall": 0.76,
+    "weighted_f1": 0.761,
+    "macro_roc_auc": 0.918,
+    "weighted_roc_auc": 0.909,
+    "epoch_losses": [1.012, 0.598, 0.314],
+    "train_time_s": 18.1,
+    "inference_ms_per_sample": 3.38,
+    "preprocessing_ms_per_sample": 0.02,
+    "total_latency_ms_per_sample": 3.4,
+    "pii_leakage_rate": 100.0,
+    "confusion_matrix": [
+      [53, 13, 6, 1],
+      [11, 50, 1, 1],
+      [7, 2, 28, 0],
+      [2, 4, 0, 21]
+    ],
+    "per_class": {
+      "High-Urgency": {
+        "precision": 0.726,
+        "recall": 0.726,
+        "f1_score": 0.726,
+        "roc_auc": 0.896,
+        "support": 73
+      },
+      "Medium": {
+        "precision": 0.7246,
+        "recall": 0.7937,
+        "f1_score": 0.7576,
+        "roc_auc": 0.908,
+        "support": 63
+      },
+      "Immediate-Threat": {
+        "precision": 0.8,
+        "recall": 0.7568,
+        "f1_score": 0.7778,
+        "roc_auc": 0.939,
+        "support": 37
+      },
+      "Low": {
+        "precision": 0.913,
+        "recall": 0.7778,
+        "f1_score": 0.84,
+        "roc_auc": 0.929,
+        "support": 27
+      }
+    }
+  },
+  "comparison_delta": {
+    "accuracy_diff": 0.025,
+    "macro_f1_diff": 0.028,
+    "weighted_f1_diff": 0.025,
+    "macro_roc_auc_diff": 0.016,
+    "agreement_rate": 0.885,
+    "both_correct": 145,
+    "masked_only_correct": 12,
+    "unmasked_only_correct": 7,
+    "both_wrong": 36
+  }
+}
+

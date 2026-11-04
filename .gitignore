@@ -1,0 +1,23 @@
+# Python / PyTorch caches
+__pycache__/
+*.py[cod]
+*$py.class
+.ipynb_checkpoints/
+
+# Virtual Environments
+.env/
+env/
+venv/
+.venv/
+
+# Large Model weights (keep in model hubs or commit via Git LFS if needed)
+FineTunedBert_masked/
+FineTunedBert_unmasked/
+FineTunedBurt_model/
+*.h5
+*.pt
+*.pth
+
+# OS files
+Thumbs.db
+.DS_Store

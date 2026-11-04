@@ -15,10 +15,20 @@ import time
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 
+# `spaces` must be imported before torch on Hugging Face ZeroGPU hardware.
+# It is optional: locally and on CPU Spaces the app runs without it.
+try:
+    import spaces  # type: ignore
+
+    ON_ZERO_GPU = os.environ.get("SPACES_ZERO_GPU", "").lower() in ("1", "true")
+except ImportError:
+    spaces = None
+    ON_ZERO_GPU = False
+
 import gradio as gr
 import numpy as np
 import torch
-from transformers import AutoConfig, DistilBertForSequenceClassification, DistilBertTokenizer
+from transformers import DistilBertForSequenceClassification, DistilBertTokenizer
 
 from pii_masker import (
     anonymize_with_details,
@@ -76,7 +86,8 @@ ENTITY_COLORS = {
     "ORG": "#4f46e5",
 }
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# DistilBERT inference is fast on CPU; avoid CUDA on Spaces (ZeroGPU only exposes it inside @spaces.GPU calls).
+device = torch.device("cuda" if torch.cuda.is_available() and not os.environ.get("SPACE_ID") else "cpu")
 SESSION_HISTORY: List[Dict] = []
 
 
@@ -238,6 +249,11 @@ def run_model_inference(
     confidence = float(probs[pred_id])
     prob_dict = {ID_TO_LABEL[i]: float(probs[i]) for i in range(len(CANONICAL_LABELS))}
     return pred_label, confidence, prob_dict, round(inference_ms, 2)
+
+
+# On ZeroGPU hardware, Spaces requires at least one @spaces.GPU function at startup.
+if ON_ZERO_GPU and spaces is not None:
+    run_model_inference = spaces.GPU(duration=20)(run_model_inference)
 
 
 # ── HTML Formatting Helpers ───────────────────────────────────────────
@@ -816,6 +832,7 @@ with gr.Blocks(
                 fn=analyze_single_message,
                 inputs=input_txt,
                 outputs=[output_card, output_entities, history_box],
+                api_name=False,
             )
 
         # ── TAB 2: MASKED VS UNMASKED LIVE COMPARISON ─────────────────
@@ -838,6 +855,7 @@ with gr.Blocks(
                 fn=compare_live_masking,
                 inputs=comp_input,
                 outputs=comp_output,
+                api_name=False,
             )
 
         # ── TAB 3: PROJECT METRICS & EVALUATION DASHBOARD ─────────────
@@ -861,8 +879,9 @@ with gr.Blocks(
                 fn=render_metrics_dashboard,
                 inputs=upload_json,
                 outputs=dashboard_html,
+                api_name=False,
             )
 
 if __name__ == "__main__":
-    demo.launch()
+    demo.launch(ssr_mode=False, show_api=False)
 

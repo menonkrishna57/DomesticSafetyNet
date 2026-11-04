@@ -8,7 +8,7 @@ sdk_version: 5.12.0
 app_file: app.py
 pinned: false
 license: mit
-short_description: Privacy-preserving domestic safety risk classifier (DistilBERT + NER)
+short_description: Privacy-preserving domestic safety risk classifier
 ---
 
 # 🛡️ DomesticSafetyNet
@@ -19,38 +19,39 @@ short_description: Privacy-preserving domestic safety risk classifier (DistilBER
 
 ## 📊 Model Evaluation & Comparison Metrics (With NLP Masking vs. Without Masking)
 
-Evaluated on the stratified 80/20 split of `dataset/synthetic_data_1000.json` (`799` training samples / `200` test samples, `random_state=42`, `3` epochs, `lr=5e-5`, `batch_size=16`):
+Evaluated on-device (NVIDIA GeForce RTX 3050 Laptop GPU) on the stratified 80/20 split of `dataset/synthetic_data_1000.json` (`799` training samples / `200` test samples, `random_state=42`, `3` epochs, `lr=5e-5`, `batch_size=16`):
 
 ### 1. Overall Performance Comparison
 
 | Metric | 🔒 With NLP Masking (Fixed) | ⚠️ Without Masking (Raw) | 🧪 Legacy Masking (Original Colab) | Δ (Fixed Masked − Unmasked) |
 | :--- | :---: | :---: | :---: | :---: |
-| **Overall Accuracy** | **78.50%** | 76.00% | 73.50% | **+2.50%** |
-| **Macro Precision** | **82.40%** | 79.80% | 80.25% | **+2.60%** |
-| **Macro Recall** | **78.60%** | 75.80% | 73.25% | **+2.80%** |
-| **Macro F1-Score** | **80.20%** | 77.40% | 76.00% | **+2.80%** |
-| **Weighted F1-Score** | **78.60%** | 76.10% | 74.00% | **+2.50%** |
-| **Macro ROC-AUC (OVR)** | **93.40%** | 91.80% | — | **+1.60%** |
-| **Weighted ROC-AUC (OVR)** | **92.60%** | 90.90% | — | **+1.70%** |
+| **Overall Accuracy** | **77.50%** | 77.00% | 73.50% | **+0.50%** |
+| **Macro Precision** | 78.84% | **83.63%** | 80.25% | -4.79% |
+| **Macro Recall** | **79.55%** | 73.84% | 73.25% | **+5.71%** |
+| **Macro F1-Score** | **78.60%** | 76.79% | 76.00% | **+1.81%** |
+| **Weighted F1-Score** | **77.20%** | 76.89% | 74.00% | **+0.31%** |
+| **Macro ROC-AUC (OVR)** | 92.99% | **93.15%** | — | -0.16% |
+| **Weighted ROC-AUC (OVR)** | **91.87%** | 91.66% | — | **+0.21%** |
 | **PII Leakage to Model/Logs** | **0.0% (Protected)** | 100.0% (Exposed) | 12.4% (Corrupted) | **-100.0%** |
-| **Avg End-to-End Latency** | **8.27 ms / sample** | 3.40 ms / sample | 8.45 ms / sample | +4.87 ms (NER overhead) |
+| **Model Inference Latency** | **2.48 ms / sample** | 2.12 ms / sample | — | +0.36 ms |
+| **Preprocessing Latency (NER+Regex)** | **12.79 ms / sample** | 0.01 ms / sample | — | +12.78 ms |
 
 ### 2. Per-Class Performance Breakdown (`n = 200` Test Set)
 
 | Risk Class | Support | Precision (Masked) | Precision (Raw) | Recall (Masked) | Recall (Raw) | F1-Score (Masked) | F1-Score (Raw) | Δ F1 | ROC-AUC (Masked vs Raw) |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **Immediate-Threat** | 37 | **83.33%** | 80.00% | **81.08%** | 75.68% | **0.8219** | 0.7778 | **+0.0441** | **95.8%** vs 93.9% |
-| **High-Urgency** | 73 | **76.71%** | 72.60% | **76.71%** | 72.60% | **0.7671** | 0.7260 | **+0.0411** | **91.2%** vs 89.6% |
-| **Medium** | 63 | **74.29%** | 72.46% | **82.54%** | 79.37% | **0.7820** | 0.7576 | **+0.0244** | **92.4%** vs 90.8% |
-| **Low** | 27 | 90.48% | **91.30%** | 70.37% | **77.78%** | 0.7917 | **0.8400** | -0.0483 | **94.2%** vs 92.9% |
+| **Immediate-Threat** | 37 | 77.27% | **89.66%** | **91.89%** | 70.27% | **0.8395** | 0.7879 | **+0.0516** | 96.17% vs **97.68%** |
+| **Low** | 27 | 84.00% | **100.00%** | **77.78%** | 59.26% | **0.8077** | 0.7442 | **+0.0635** | 95.83% vs **96.62%** |
+| **Medium** | 63 | **71.62%** | 69.51% | 84.13% | **90.48%** | 0.7737 | **0.7862** | -0.0125 | **90.90%** vs 90.78% |
+| **High-Urgency** | 73 | **82.46%** | 75.34% | 64.38% | **75.34%** | 0.7231 | **0.7534** | -0.0303 | **89.07%** vs 87.54% |
 
 ### 3. Dataset Privacy & PII Redaction Metrics (`999` Total Entries)
 
-* **Samples Containing PII:** `642 / 999` (**64.26%** of messages contain personal or location identifiers)
-* **Total PII Entities Masked:** `984` entities across 10 categories:
-  * `[PERSON]`: `412` | `[GPE]`: `289` | `[ORG]`: `118` | `[LOC]`: `78`
-  * `[ADDRESS]`: `35` (`26` street addresses + `9` flat/apartment/house unit numbers)
-  * `[PHONE]`: `33` (`15` Indian mobile + `18` standard phone numbers)
+* **Samples Containing PII:** `618 / 999` (**61.86%** of messages contain personal or location identifiers)
+* **Total PII Entities Masked:** `1,122` entities across 10 categories:
+  * `[GPE]`: `405` | `[PERSON]`: `387` | `[ORG]`: `222` | `[LOC]`: `37`
+  * `[ADDRESS]`: `34` (street addresses and flat/apartment/house unit numbers)
+  * `[PHONE]`: `18` (`15` Indian mobile + `3` standard phone numbers)
   * `[EMAIL]`: `8` | `[LICENSE_PLATE]`: `7` | `[AADHAAR]`: `2` | `[PAN]`: `2`
 
 ### 4. Key NLP Masking Fixes Applied (`pii_masker.py` & `compare_masking.py`)

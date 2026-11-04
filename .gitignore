@@ -11,9 +11,12 @@ venv/
 .venv/
 
 # Large Model weights (keep in model hubs or commit via Git LFS if needed)
+FineTunedBert_best_model/
 FineTunedBert_masked/
 FineTunedBert_unmasked/
 FineTunedBurt_model/
+*.safetensors
+*.bin
 *.h5
 *.pt
 *.pth
